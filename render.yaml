@@ -1,0 +1,67 @@
+# Render Blueprint for TenderIQ
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: tenderiq-db
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile.render.db
+    envVars:
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_DB
+        value: tenderiq
+
+  # Backend API
+  - type: web
+    name: tenderiq-backend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./backend/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tenderiq-db
+          property: connectionString
+      - key: TESSERACT_PATH
+        value: /usr/bin/tesseract
+      - key: OCR_ENGINE
+        value: tesseract
+      - key: AI_PROVIDER
+        value: none
+      - key: CONFIDENCE_THRESHOLD
+        value: 0.75
+      - key: BORDERLINE_MARGIN
+        value: 0.05
+      - key: LLM_HIGH_CONF
+        value: 0.85
+      - key: LLM_MED_CONF
+        value: 0.60
+      - key: DATA_DIR
+        value: /data
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+    disk:
+      name: tenderiq-data
+      mountPath: /app/data
+      sizeGB: 1
+
+  # Frontend
+  - type: web
+    name: tenderiq-frontend
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: tenderiq-backend
+          property: host
