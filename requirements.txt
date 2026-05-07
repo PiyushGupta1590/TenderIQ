@@ -12,6 +12,7 @@ python-dotenv==1.0.1
 aiofiles==23.2.1
 numpy==1.26.4
 python-docx==1.1.2
+requests==2.31.0
 
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy[asyncio]==2.0.29
